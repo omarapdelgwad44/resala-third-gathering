@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { loadGuestInvite, loadPublicSite, photoUrl, recordMetric } from '../lib/data';
 import { hasSupabaseConfig, supabase } from '../lib/supabase';
-import { type EventRecord, type GuestInvite, type Honoree, type ProgramItem } from '../lib/types';
+import { type EventMedia, type EventRecord, type GuestInvite, type Honoree, type ProgramItem } from '../lib/types';
 
 const fallbackIntro = 'في رسالة، كل حكاية خير وراها ناس كتير. تعالوا نرجع نتقابل، نفتكر أثرنا، ونحتفي باللي شاركونا الرحلة.';
 
 export function Invitation() {
   const [event, setEvent] = useState<EventRecord | null>(null);
+  const [media, setMedia] = useState<EventMedia[]>([]);
   const [program, setProgram] = useState<ProgramItem[]>([]);
   const [honorees, setHonorees] = useState<Honoree[]>([]);
   const [invite, setInvite] = useState<GuestInvite | null>(null);
@@ -23,6 +24,7 @@ export function Invitation() {
     ]).then(([site, guestInvite]) => {
       if (!live) return;
       setEvent(site.event);
+      setMedia(site.media);
       setProgram(site.program);
       setHonorees(site.honorees);
       setInvite(guestInvite);
@@ -34,6 +36,11 @@ export function Invitation() {
 
   const title = event?.title ?? 'حكايتنا لسه مكملة';
   const intro = event?.intro ?? fallbackIntro;
+  const invitePhotoUrl = photoUrl(invite?.honoree_photo_path ?? null);
+  const heroImageUrl = invitePhotoUrl ?? photoUrl(event?.hero_image_path ?? null, 'hero-images');
+  const sideHeroImage = media.find((item) => item.placement === 'hero_small');
+  const bottomHeroImage = media.find((item) => item.placement === 'hero_bottom');
+  const galleryImages = media.filter((item) => item.placement === 'gallery');
   const date = event?.event_at ? new Date(event.event_at) : null;
   const dateText = date
     ? new Intl.DateTimeFormat('ar-EG', { dateStyle: 'full', timeZone: 'Africa/Cairo' }).format(date)
@@ -96,17 +103,15 @@ export function Invitation() {
               <p className="hero-deck">{invite?.personal_message || intro}</p>
               <div className="hero-actions">
                 <button className="button button-red" onClick={rsvpLink}>هكون معاكم <span>←</span></button>
-            </div>
-            <div className="hero-hero-frame" aria-label="صورة الشخصية الرئيسية">
                 <a className="button button-outline" href="#story">اقرأ الحكاية</a>
               </div>
               <p className="hero-footnote">{event?.is_published ? 'لقاء يجمع ناس الخير من جديد' : 'معاينة — سيُعلن الموعد والمكان بعد اعتماد الإدارة'}</p>
             </div>
             <div className="hero-collage" aria-label="لوحة تذكارية من حكايات رسالة">
               <div className="collage-tape" />
-              <article className="memory-frame frame-large"><div className="memory-art art-sunrise"><span className="art-scribble">الخير بيجمعنا</span><i /></div><b className="frame-caption">ناس · أثر · حكايات</b></article>
-              <article className="memory-frame frame-small"><div className="memory-art art-hands"><span>مع بعض</span><i /><b>×</b></div><b className="frame-caption">كل حكاية تبدأ بحد</b></article>
-              <article className="memory-frame frame-bottom"><div className="memory-art art-paper"><strong>أثر<br />يفضل</strong><span>رسالة</span></div><b className="frame-caption">والأثر مكمل بينا</b></article>
+              {heroImageUrl ? <article className="memory-frame frame-large hero-photo-frame"><div className="memory-art"><img className="hero-frame-image" src={heroImageUrl} alt={invitePhotoUrl ? `صورة ${invite?.honoree_name || invite?.guest_name || 'ضيفنا'}` : 'الصورة الرئيسية للقاء'} fetchPriority="high" /></div><b className="frame-caption">{invite?.honoree_name || invite?.guest_name || 'حكايات رسالة'}</b></article> : <article className="memory-frame frame-large"><div className="memory-art art-sunrise"><span className="art-scribble">الخير بيجمعنا</span><i /></div><b className="frame-caption">ناس · أثر · حكايات</b></article>}
+              {sideHeroImage ? <article className="memory-frame frame-small"><div className="memory-art"><img className="hero-frame-image" src={photoUrl(sideHeroImage.storage_path, 'event-media') ?? ''} alt={sideHeroImage.alt_text} loading="lazy" /></div><b className="frame-caption">{sideHeroImage.caption || sideHeroImage.alt_text}</b></article> : <article className="memory-frame frame-small"><div className="memory-art art-hands"><span>مع بعض</span><i /><b>×</b></div><b className="frame-caption">كل حكاية تبدأ بحد</b></article>}
+              {bottomHeroImage ? <article className="memory-frame frame-bottom"><div className="memory-art"><img className="hero-frame-image" src={photoUrl(bottomHeroImage.storage_path, 'event-media') ?? ''} alt={bottomHeroImage.alt_text} loading="lazy" /></div><b className="frame-caption">{bottomHeroImage.caption || bottomHeroImage.alt_text}</b></article> : <article className="memory-frame frame-bottom"><div className="memory-art art-paper"><strong>أثر<br />يفضل</strong><span>رسالة</span></div><b className="frame-caption">والأثر مكمل بينا</b></article>}
               <div className="collage-stamp"><b>03</b><small>لقاء الحكايات</small></div>
               <span className="collage-note">لمة ناسنا<br />قربت!</span>
             </div>
@@ -135,6 +140,8 @@ export function Invitation() {
             <div className="details-note"><span>✳</span> {event?.is_published ? 'مبسوطين إنكم هتكونوا معانا.' : 'التفاصيل لسه تحت الإعداد — الإدارة هتحدّث الصفحة قبل إرسال الدعوات.'}</div>
           </div>
         </section>
+
+        {galleryImages.length > 0 && <section className="event-gallery section-shell" aria-labelledby="gallery-title"><div className="section-head"><div className="section-kicker">من ألبوم اللقاء</div><h2 id="gallery-title">حكايات في صور</h2></div><div className="event-gallery-grid">{galleryImages.map((item) => { const url = photoUrl(item.storage_path, 'event-media'); return url ? <figure className="event-gallery-item" key={item.id}><img src={url} alt={item.alt_text} loading="lazy" /><figcaption>{item.caption || item.alt_text}</figcaption></figure> : null; })}</div></section>}
 
         <section className="program-section section-shell" hidden={event ? !event.show_program : false}>
           <div className="section-head"><div className="section-kicker">على مدار الليلة</div><h2>حكايات في انتظارنا</h2><p>برنامج بسيط، ولمة كبيرة، وناس وحشتنا.</p></div>

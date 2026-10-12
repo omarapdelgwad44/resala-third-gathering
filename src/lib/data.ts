@@ -1,28 +1,31 @@
 import { supabase } from './supabase';
-import { EVENT_SLUG, type EventRecord, type ProgramItem, type Honoree, type GuestInvite } from './types';
+import { EVENT_SLUG, type EventRecord, type EventMedia, type ProgramItem, type Honoree, type GuestInvite } from './types';
 
 export type PublicSiteData = {
   event: EventRecord | null;
+  media: EventMedia[];
   program: ProgramItem[];
   honorees: Honoree[];
 };
 
 export async function loadPublicSite(): Promise<PublicSiteData> {
-  if (!supabase) return { event: null, program: [], honorees: [] };
+  if (!supabase) return { event: null, media: [], program: [], honorees: [] };
   const { data: event } = await supabase
     .from('events')
-    .select('id,slug,title,intro,event_at,venue,map_url,is_published,show_program,show_honorees,show_rsvp')
+    .select('id,slug,title,intro,event_at,venue,map_url,is_published,show_program,show_honorees,show_rsvp,hero_image_path')
     .eq('slug', EVENT_SLUG)
     .eq('is_published', true)
     .maybeSingle();
-  if (!event) return { event: null, program: [], honorees: [] };
+  if (!event) return { event: null, media: [], program: [], honorees: [] };
 
-  const [programResult, honoreeResult] = await Promise.all([
+  const [programResult, honoreeResult, mediaResult] = await Promise.all([
     supabase.from('program_items').select('*').eq('event_id', event.id).eq('is_visible', true).order('sort_order'),
     supabase.from('honorees').select('*').eq('event_id', event.id).eq('is_visible', true).order('sort_order'),
+    supabase.from('event_media').select('*').eq('event_id', event.id).eq('is_visible', true).order('placement').order('sort_order'),
   ]);
   return {
     event: event as EventRecord,
+    media: (mediaResult.data ?? []) as EventMedia[],
     program: (programResult.data ?? []) as ProgramItem[],
     honorees: (honoreeResult.data ?? []) as Honoree[],
   };
@@ -40,9 +43,9 @@ export async function recordMetric(eventId: string, metric: 'page_view' | 'rsvp_
   await supabase.from('site_metrics').insert({ event_id: eventId, metric });
 }
 
-export function photoUrl(path: string | null): string | null {
+export function photoUrl(path: string | null, bucket = 'honoree-photos'): string | null {
   if (!supabase || !path) return null;
-  return supabase.storage.from('honoree-photos').getPublicUrl(path).data.publicUrl;
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
 export function formatEventDate(value: string | null): { date: string; time: string } {

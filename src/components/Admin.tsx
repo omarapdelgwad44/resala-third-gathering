@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { EVENT_SLUG, type EventRecord, type Honoree, type ProgramItem } from '../lib/types';
+import { EVENT_SLUG, type EventMedia, type EventRecord, type Honoree, type ProgramItem } from '../lib/types';
 import { hasSupabaseConfig, supabase } from '../lib/supabase';
 import { photoUrl } from '../lib/data';
+import { MediaManager } from './MediaManager';
 
-type Tab = 'event' | 'program' | 'honorees' | 'invites' | 'rsvps' | 'metrics';
+type Tab = 'event' | 'program' | 'honorees' | 'media' | 'invites' | 'rsvps' | 'metrics';
 type Rsvp = { id: string; guest_name: string; phone: string | null; attending: boolean; party_size: number; message: string; created_at: string };
 type Metric = { metric: 'page_view' | 'rsvp_click' | 'rsvp_submitted'; created_at: string };
-const tabNames: Record<Tab, string> = { event: 'بيانات اللقاء', program: 'برنامج الحفل', honorees: 'أهل الأثر', invites: 'الدعوات الشخصية', rsvps: 'ردود الحضور', metrics: 'أداء الموقع' };
+const tabNames: Record<Tab, string> = { event: 'بيانات اللقاء', program: 'برنامج الحفل', honorees: 'أهل الأثر', media: 'الصور والهيرو', invites: 'الدعوات الشخصية', rsvps: 'ردود الحضور', metrics: 'أداء الموقع' };
 
 function localDateTime(value: string | null) {
   if (!value) return '';
@@ -28,6 +29,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('event');
   const [event, setEvent] = useState<EventRecord | null>(null);
+  const [eventMedia, setEventMedia] = useState<EventMedia[]>([]);
   const [program, setProgram] = useState<ProgramItem[]>([]);
   const [honorees, setHonorees] = useState<Honoree[]>([]);
   const [rsvps, setRsvps] = useState<Rsvp[]>([]);
@@ -50,13 +52,15 @@ export function Admin({ onExit }: { onExit: () => void }) {
     setBusy(true);
     const { data: eventData, error: eventError } = await supabase.from('events').select('*').eq('slug', EVENT_SLUG).single();
     if (eventError || !eventData) { setNotice('تعذّر تحميل بيانات اللقاء. تأكدي من صلاحية حساب الإدارة.'); setBusy(false); return; }
-    const [p, h, r, m] = await Promise.all([
+    const [p, h, mediaResult, r, m] = await Promise.all([
       supabase.from('program_items').select('*').eq('event_id', eventData.id).order('sort_order'),
       supabase.from('honorees').select('*').eq('event_id', eventData.id).order('sort_order'),
+      supabase.from('event_media').select('*').eq('event_id', eventData.id).order('placement').order('sort_order'),
       supabase.from('rsvps').select('id,guest_name,phone,attending,party_size,message,created_at').eq('event_id', eventData.id).order('created_at', { ascending: false }).limit(500),
       supabase.from('site_metrics').select('metric,created_at').eq('event_id', eventData.id).order('created_at', { ascending: false }).limit(5000),
     ]);
     setEvent(eventData as EventRecord);
+    setEventMedia((mediaResult.data ?? []) as EventMedia[]);
     setProgram((p.data ?? []) as ProgramItem[]);
     setHonorees((h.data ?? []) as Honoree[]);
     setRsvps((r.data ?? []) as Rsvp[]);
@@ -123,12 +127,14 @@ export function Admin({ onExit }: { onExit: () => void }) {
     const dateLocal = String(f.get('event_at') ?? '');
     const venue = String(f.get('venue') ?? '').trim();
     if (isPublished && (!dateLocal || !venue)) { setNotice('أضيفي الموعد والمكان قبل نشر الدعوة للعامة.'); return; }
+    if (heroImage && (heroImage.size > 4 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(heroImage.type))) { setNotice('اختاري صورة JPG أو PNG أو WebP بحجم لا يتجاوز ٤ ميجابايت.'); return; }
     setBusy(true);
+    const previousHeroPath = event.hero_image_path;
     const photoExt = heroImage?.type === 'image/png' ? 'png' : heroImage?.type === 'image/webp' ? 'webp' : 'jpg';
-    const heroPath = heroImage ? `${crypto.randomUUID()}.${photoExt}` : (event.hero_image_path || null);
+    const newHeroPath = heroImage ? `${crypto.randomUUID()}.${photoExt}` : null;
+    const heroPath = newHeroPath ?? event.hero_image_path;
     if (heroImage) {
-      // @ts-ignore
-      const { error: uploadError } = await supabase.storage.from('hero-images').upload(heroPath, heroImage, { contentType: heroImage.type, upsert: false });
+      const { error: uploadError } = await supabase.storage.from('hero-images').upload(newHeroPath!, heroImage, { contentType: heroImage.type, upsert: false });
       if (uploadError) { setBusy(false); setNotice('تعذّر رفع الصورة الرئيسية. استخدمي JPG أو PNG أو WebP حتى ٤ ميجابايت.'); return; }
     }
     const patch = {
@@ -147,7 +153,12 @@ export function Admin({ onExit }: { onExit: () => void }) {
     const { error } = await supabase.from('events').update(patch).eq('id', event.id);
     setBusy(false);
     if (error) setNotice('تعذّر حفظ التغييرات. راجعي الاتصال ثم حاولي مجددًا.');
-    else { setNotice(isPublished ? 'تم حفظ التغييرات ونشر الدعوة.' : 'تم حفظ التغييرات كمسودة غير منشورة.'); await loadData(); }
+    else {
+      if (heroImage && previousHeroPath && previousHeroPath !== heroPath) await supabase.storage.from('hero-images').remove([previousHeroPath]);
+      setHeroImage(null);
+      setNotice(isPublished ? 'تم حفظ التغييرات ونشر الدعوة.' : 'تم حفظ التغييرات كمسودة غير منشورة.');
+      await loadData();
+    }
   }
 
   async function addProgram(e: FormEvent<HTMLFormElement>) {
@@ -234,9 +245,10 @@ export function Admin({ onExit }: { onExit: () => void }) {
       <div className="admin-main">
         <div className="admin-stats"><div className="admin-stat"><small>مشاهدات الصفحة · ٧ أيام</small><strong>{stats.views}</strong></div><div className="admin-stat"><small>نقرات تأكيد الحضور</small><strong>{stats.clicks}</strong></div><div className="admin-stat"><small>مؤكدون</small><strong>{stats.yes}</strong></div><div className="admin-stat"><small>اعتذارات</small><strong>{stats.no}</strong></div></div>
         {notice && <div className="admin-message" role="status">{notice}</div>}
+        {tab === 'media' && event && <MediaManager eventId={event.id} items={eventMedia} onReload={loadData} onNotice={setNotice} />}
         {tab === 'event' && event && <section className="admin-panel"><h2>بيانات الدعوة</h2><p>عدّلي نص الدعوة والتفاصيل. ستظل التغييرات خاصة حتى تفعّلي النشر.</p><form onSubmit={saveEvent}>
           <div className="admin-form-grid"><label className="admin-field">عنوان اللقاء<input name="title" required maxLength={180} defaultValue={event.title} /></label><label className="admin-field">المكان<input name="venue" maxLength={240} defaultValue={event.venue ?? ''} placeholder="اسم القاعة أو العنوان" /></label><label className="admin-field full">نص الترحيب<textarea name="intro" maxLength={1200} defaultValue={event.intro} /></label><label className="admin-field">الموعد والتوقيت المحلي<input name="event_at" type="datetime-local" defaultValue={localDateTime(event.event_at)} /></label><label className="admin-field">رابط الخريطة<input name="map_url" type="url" placeholder="https://…" defaultValue={event.map_url ?? ''} /></label></div>
-          <div className="admin-form-grid"><label className="admin-field">الصورة الرئيسية<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setHeroImage(e.target.files?.[0] ?? null)} defaultValue={event.hero_image_path ? photoUrl(event.hero_image_path) || '' : ''} /></label></div>
+          <div className="admin-form-grid"><label className="admin-field">صورة الهيرو الرئيسية<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setHeroImage(e.target.files?.[0] ?? null)} /></label>{event.hero_image_path && <div className="hero-image-preview"><img src={photoUrl(event.hero_image_path, 'hero-images') ?? ''} alt="معاينة صورة الهيرو الحالية" /></div>}</div>
           <div className="admin-checks"><label><input name="show_program" type="checkbox" defaultChecked={event.show_program} /> عرض البرنامج</label><label><input name="show_honorees" type="checkbox" defaultChecked={event.show_honorees} /> عرض قسم التكريم</label><label><input name="show_rsvp" type="checkbox" defaultChecked={event.show_rsvp} /> عرض RSVP</label></div>
           <div className="admin-checks"><label><input name="is_published" type="checkbox" defaultChecked={event.is_published} /> نشر الدعوة للعامة</label></div>
           <div className="consent-admin-note">قبل النشر: تأكدي من صحة التاريخ والمكان، ومن وجود موافقة أصحاب الصور والأسماء على عرضها.</div>

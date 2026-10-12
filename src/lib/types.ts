@@ -33,6 +33,20 @@ export type Honoree = {
   is_visible: boolean;
 };
 
+export type EventMediaPlacement = 'gallery' | 'hero_small' | 'hero_bottom';
+
+export type EventMedia = {
+  id: string;
+  event_id: string;
+  storage_path: string;
+  placement: EventMediaPlacement;
+  alt_text: string;
+  caption: string;
+  sort_order: number;
+  is_visible: boolean;
+  created_at: string;
+};
+
 export type GuestInvite = {
   guest_name: string;
   personal_message: string;

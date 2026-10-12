@@ -3,6 +3,9 @@
 .event-gallery{padding-top:52px;padding-bottom:62px}
 .event-gallery .section-head{margin-bottom:24px}
 .event-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;max-width:1050px;margin:0 auto}
+.event-gallery-empty{display:grid;min-height:170px;place-content:center;justify-items:center;gap:8px;border-top:1px solid #ffffff42;border-bottom:1px solid #ffffff42;color:#fff;text-align:center}
+.event-gallery-empty span{color:#f4d35e;font-size:24px}
+.event-gallery-empty p{margin:0;font:700 15px var(--display)}
 .event-gallery-item{position:relative;min-width:0;margin:0;padding:9px 9px 36px;background:#fff;border:1px solid #e3ddd2;box-shadow:0 14px 34px #2a24331f;transform:rotate(-.8deg)}
 .event-gallery-item:nth-child(3n+2){transform:rotate(1deg)}
 .event-gallery-item:nth-child(3n){transform:rotate(-1.2deg)}

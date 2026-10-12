@@ -141,7 +141,7 @@ export function Invitation() {
           </div>
         </section>
 
-        {galleryImages.length > 0 && <section className="event-gallery section-shell" aria-labelledby="gallery-title"><div className="section-head"><div className="section-kicker">من ألبوم اللقاء</div><h2 id="gallery-title">حكايات في صور</h2></div><div className="event-gallery-grid">{galleryImages.map((item) => { const url = photoUrl(item.storage_path, 'event-media'); return url ? <figure className="event-gallery-item" key={item.id}><img src={url} alt={item.alt_text} loading="lazy" /><figcaption>{item.caption || item.alt_text}</figcaption></figure> : null; })}</div></section>}
+        {event?.is_published && <section className="event-gallery section-shell" aria-labelledby="gallery-title"><div className="section-head"><div className="section-kicker">من ألبوم اللقاء</div><h2 id="gallery-title">حكايات في صور</h2></div>{galleryImages.length ? <div className="event-gallery-grid">{galleryImages.map((item) => { const url = photoUrl(item.storage_path, 'event-media'); return url ? <figure className="event-gallery-item" key={item.id}><img src={url} alt={item.alt_text} loading="lazy" /><figcaption>{item.caption || item.alt_text}</figcaption></figure> : null; })}</div> : <div className="event-gallery-empty"><span aria-hidden="true">✳</span><p>هنضيف صور حكايات اللقاء هنا قريباً.</p></div>}</section>}
 
         <section className="program-section section-shell" hidden={event ? !event.show_program : false}>
           <div className="section-head"><div className="section-kicker">على مدار الليلة</div><h2>حكايات في انتظارنا</h2><p>برنامج بسيط، ولمة كبيرة، وناس وحشتنا.</p></div>

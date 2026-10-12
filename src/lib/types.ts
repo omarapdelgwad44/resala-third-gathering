@@ -10,6 +10,7 @@ export type EventRecord = {
   show_program: boolean;
   show_honorees: boolean;
   show_rsvp: boolean;
+  hero_image_path: string | null;
 };
 
 export type ProgramItem = {

@@ -35,6 +35,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
   const [busy, setBusy] = useState(false);
   const [newProgramTitle, setNewProgramTitle] = useState('');
   const [newProgramTime, setNewProgramTime] = useState('');
+  const [heroImage, setHeroImage] = useState<File | null>(null);
   const [honoreeName, setHonoreeName] = useState('');
   const [honoreeRole, setHonoreeRole] = useState('');
   const [honoreeMessage, setHonoreeMessage] = useState('');
@@ -123,6 +124,13 @@ export function Admin({ onExit }: { onExit: () => void }) {
     const venue = String(f.get('venue') ?? '').trim();
     if (isPublished && (!dateLocal || !venue)) { setNotice('أضيفي الموعد والمكان قبل نشر الدعوة للعامة.'); return; }
     setBusy(true);
+    const photoExt = heroImage?.type === 'image/png' ? 'png' : heroImage?.type === 'image/webp' ? 'webp' : 'jpg';
+    const heroPath = heroImage ? `${crypto.randomUUID()}.${photoExt}` : (event.hero_image_path || null);
+    if (heroImage) {
+      // @ts-ignore
+      const { error: uploadError } = await supabase.storage.from('hero-images').upload(heroPath, heroImage, { contentType: heroImage.type, upsert: false });
+      if (uploadError) { setBusy(false); setNotice('تعذّر رفع الصورة الرئيسية. استخدمي JPG أو PNG أو WebP حتى ٤ ميجابايت.'); return; }
+    }
     const patch = {
       title: String(f.get('title') ?? '').trim(),
       intro: String(f.get('intro') ?? '').trim(),
@@ -133,6 +141,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
       show_program: f.get('show_program') === 'on',
       show_honorees: f.get('show_honorees') === 'on',
       show_rsvp: f.get('show_rsvp') === 'on',
+      hero_image_path: heroPath,
       updated_at: new Date().toISOString(),
     };
     const { error } = await supabase.from('events').update(patch).eq('id', event.id);
@@ -227,6 +236,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
         {notice && <div className="admin-message" role="status">{notice}</div>}
         {tab === 'event' && event && <section className="admin-panel"><h2>بيانات الدعوة</h2><p>عدّلي نص الدعوة والتفاصيل. ستظل التغييرات خاصة حتى تفعّلي النشر.</p><form onSubmit={saveEvent}>
           <div className="admin-form-grid"><label className="admin-field">عنوان اللقاء<input name="title" required maxLength={180} defaultValue={event.title} /></label><label className="admin-field">المكان<input name="venue" maxLength={240} defaultValue={event.venue ?? ''} placeholder="اسم القاعة أو العنوان" /></label><label className="admin-field full">نص الترحيب<textarea name="intro" maxLength={1200} defaultValue={event.intro} /></label><label className="admin-field">الموعد والتوقيت المحلي<input name="event_at" type="datetime-local" defaultValue={localDateTime(event.event_at)} /></label><label className="admin-field">رابط الخريطة<input name="map_url" type="url" placeholder="https://…" defaultValue={event.map_url ?? ''} /></label></div>
+          <div className="admin-form-grid"><label className="admin-field">الصورة الرئيسية<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setHeroImage(e.target.files?.[0] ?? null)} defaultValue={event.hero_image_path ? photoUrl(event.hero_image_path) || '' : ''} /></label></div>
           <div className="admin-checks"><label><input name="show_program" type="checkbox" defaultChecked={event.show_program} /> عرض البرنامج</label><label><input name="show_honorees" type="checkbox" defaultChecked={event.show_honorees} /> عرض قسم التكريم</label><label><input name="show_rsvp" type="checkbox" defaultChecked={event.show_rsvp} /> عرض RSVP</label></div>
           <div className="admin-checks"><label><input name="is_published" type="checkbox" defaultChecked={event.is_published} /> نشر الدعوة للعامة</label></div>
           <div className="consent-admin-note">قبل النشر: تأكدي من صحة التاريخ والمكان، ومن وجود موافقة أصحاب الصور والأسماء على عرضها.</div>

@@ -96,6 +96,8 @@ export function Invitation() {
               <p className="hero-deck">{invite?.personal_message || intro}</p>
               <div className="hero-actions">
                 <button className="button button-red" onClick={rsvpLink}>هكون معاكم <span>←</span></button>
+            </div>
+            <div className="hero-hero-frame" aria-label="صورة الشخصية الرئيسية">
                 <a className="button button-outline" href="#story">اقرأ الحكاية</a>
               </div>
               <p className="hero-footnote">{event?.is_published ? 'لقاء يجمع ناس الخير من جديد' : 'معاينة — سيُعلن الموعد والمكان بعد اعتماد الإدارة'}</p>

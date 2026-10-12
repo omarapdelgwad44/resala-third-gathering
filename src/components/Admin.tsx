@@ -24,6 +24,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [notice, setNotice] = useState('');
   const [tab, setTab] = useState<Tab>('event');
   const [event, setEvent] = useState<EventRecord | null>(null);
@@ -100,12 +101,12 @@ export function Admin({ onExit }: { onExit: () => void }) {
   async function requestLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!supabase) return;
-    setNotice('جاري إرسال رابط الدخول…');
-    const { error } = await supabase.auth.signInWithOtp({
+    setNotice('جاري تسجيل الدخول…');
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${window.location.pathname}?admin=1` },
+      password,
     });
-    setNotice(error ? 'لم نتمكن من إرسال الرابط. تأكدي من إنشاء حساب الإدارة وإضافته للقائمة المصرّح بها.' : 'وصل رابط دخول لمرة واحدة إلى بريدك. افتحيه من نفس المتصفح للمتابعة.');
+    setNotice(error ? 'بيانات الدخول غير صحيحة. تحققي من البريد وكلمة المرور ثم حاولي مرة أخرى.' : 'تم تسجيل الدخول؛ جاري فتح لوحة الإدارة…');
   }
 
   async function signOut() {
@@ -214,7 +215,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
 
   if (!hasSupabaseConfig || !supabase) return <div className="admin-page"><div className="login-card"><h2>إعداد الموقع</h2><p>إعدادات الاتصال بقاعدة البيانات غير مكتملة. أضيفي متغيرات Supabase إلى إعدادات البناء.</p><button className="admin-button" onClick={onExit}>العودة للدعوة</button></div></div>;
   if (checking) return <div className="admin-page"><p className="loading-note">بنراجع صلاحية الدخول…</p></div>;
-  if (!session) return <div className="admin-page"><div className="login-card"><div className="admin-title"><img src={`${import.meta.env.BASE_URL}assets/resala-logo.png`} alt="شعار رسالة" /><div><h2>إدارة حكايات رسالة</h2><p>مساحة خاصة بفريق التنظيم</p></div></div><p>اكتبي بريد الإدارة المصرّح به. سنرسل رابط دخول لمرة واحدة؛ كلمة المرور غير مطلوبة.</p><form onSubmit={requestLogin}><label className="admin-field">البريد الإلكتروني<input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label><button className="button button-blue" type="submit">أرسل رابط الدخول</button></form><p className="login-status" role="status">{notice}</p><button className="admin-button" onClick={onExit}>العودة للدعوة</button></div></div>;
+  if (!session) return <div className="admin-page"><div className="login-card"><div className="admin-title"><img src={`${import.meta.env.BASE_URL}assets/resala-logo.png`} alt="شعار رسالة" /><div><h2>إدارة حكايات رسالة</h2><p>مساحة خاصة بفريق التنظيم</p></div></div><p>سجّلي الدخول ببريد الإدارة المصرّح به وكلمة المرور.</p><form onSubmit={requestLogin}><label className="admin-field">البريد الإلكتروني<input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label><label className="admin-field">كلمة المرور<input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></label><button className="button button-blue" type="submit">تسجيل الدخول</button></form><p className="login-status" role="status">{notice}</p><button className="admin-button" onClick={onExit}>العودة للدعوة</button></div></div>;
   if (!isAdmin) return <div className="admin-page"><div className="login-card"><h2>الحساب غير مصرّح له</h2><p>تم تسجيل الدخول، لكن هذا البريد غير موجود في قائمة إدارة الموقع. تواصلي مع مالك المشروع لإضافته.</p><p className="login-status" role="status">{notice}</p><button className="admin-button" onClick={() => void signOut()}>تسجيل الخروج</button> <button className="admin-button" onClick={onExit}>العودة للدعوة</button></div></div>;
 
   return <main className="admin-page"><div className="admin-shell">

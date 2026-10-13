@@ -87,7 +87,16 @@ export function Invitation() {
 
           <div className="card-divider"><i>✧</i></div>
 
-          <p className="card-word">{word}</p>
+          <div className="card-word">
+            {word.split('\n\n').map((paragraph, index) => {
+              const colors = ['#4a9fd4', '#c9a44c', '#8e4585'];
+              return (
+                <p key={index} style={{ color: colors[index % colors.length] }}>
+                  {paragraph}
+                </p>
+              );
+            })}
+          </div>
 
           {(dateText || venue) && (
             <div className="card-details">

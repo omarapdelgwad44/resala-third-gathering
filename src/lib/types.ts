@@ -25,8 +25,8 @@ export type InviteForm = {
 export const EVENT_SLUG = 'resala-third-gathering';
 
 export const DEFAULT_INVITE: InviteForm = {
-  title: 'حفلة الثلث الثاني << Zone 8 >>',
-  slogan: 'After All of That, We're Here',
+  title: 'حفلة الثلث الثاني (Zone 8)',
+  slogan: 'After All of That, We\'re Here',
   honorary_word: 'بكل الحب، تتشرف جمعية رسالة بدعوتكم لحضور حفلتنا، ومشاركتنا لحظات مميزة مليانة فرحة وذكريات حلوة 💙✨\n\nوجودكم معانا هو اللي بيكمّل فرحتنا، ومستنيينكم تكونوا جزء من اليوم المميز ده، ونحتفل سوا بكل لحظة حلوة جمعتنا في رسالة. 💜\n\nمستنيينكم تنورونا، لأن فرحتنا مش هتكمل غير بيكم! 🎉',
   org_name: 'جمعية رسالة — قوافل طبية المهندسين',
   venue: '',

@@ -107,7 +107,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
           </div>
           <label className="admin-file">
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => pickImage(e.target.files?.[0] ?? null)} />
-            <span>{imageFile ? imageFile.name : 'اختيار صورة (JPG / PNG / WebP · حتى ٥ ميجابايت)'}</span>
+            <span>{imageFile ? imageFile.name : 'اختيار صورة (JPG / PNG / WebP · حتى ٤ ميجابايت)'}</span>
           </label>
         </div>
 

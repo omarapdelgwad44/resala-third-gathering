@@ -42,7 +42,7 @@ export async function saveInvite(patch: InvitePatch): Promise<string | null> {
 
 export async function uploadInviteImage(file: File): Promise<{ path?: string; error?: string }> {
   if (!supabase) return { error: 'الاتصال بقاعدة البيانات غير مهيأ.' };
-  if (file.size > 5 * 1024 * 1024) return { error: 'حجم الصورة كبير — الحد الأقصى ٥ ميجابايت.' };
+  if (file.size > 4 * 1024 * 1024) return { error: 'حجم الصورة كبير — الحد الأقصى ٤ ميجابايت.' };
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return { error: 'مسموح بـ JPG أو PNG أو WebP فقط.' };
   const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
   const path = `${crypto.randomUUID()}.${ext}`;

@@ -321,20 +321,6 @@ img { max-width: 100%; }
   opacity: 0.75;
 }
 
-.card-admin {
-  display: block;
-  margin-top: 18px;
-  text-align: center;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--sky-500);
-  text-decoration: none;
-  opacity: 0.55;
-  transition: opacity 0.2s ease;
-}
-
-.card-admin:hover { opacity: 1; }
-
 /* ============ ADMIN ============ */
 
 .admin-stage {

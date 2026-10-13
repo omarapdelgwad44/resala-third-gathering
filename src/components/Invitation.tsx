@@ -102,8 +102,6 @@ export function Invitation() {
             <small>حكايات الخير مستمرة</small>
           </footer>
         </div>
-
-        <a className="card-admin" href={`${window.location.pathname}?admin=1`}>إدارة الدعوة</a>
       </main>
     </div>
   );

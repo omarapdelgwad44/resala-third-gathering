@@ -321,6 +321,30 @@ img { max-width: 100%; }
   opacity: 0.75;
 }
 
+.card-map {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 12px 28px;
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  background: linear-gradient(160deg, var(--sky-500), var(--sky-700));
+  box-shadow: 0 16px 30px -16px var(--sky-600);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.card-map svg { width: 18px; height: 18px; fill: currentColor; }
+
+.card-map:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 36px -16px var(--sky-600);
+}
+
 /* ============ ADMIN ============ */
 
 .admin-stage {

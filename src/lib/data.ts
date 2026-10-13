@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import { EVENT_SLUG, type EventRecord } from './types';
 
-const COLUMNS = 'id,slug,title,slogan,org_name,honorary_word:intro,event_at,venue,hero_image_path,is_published';
+const COLUMNS = 'id,slug,title,slogan,org_name,honorary_word:intro,event_at,venue,map_url,hero_image_path,is_published';
 
 export async function loadInvite(): Promise<EventRecord | null> {
   if (!supabase) return null;
@@ -15,6 +15,7 @@ export type InvitePatch = {
   honorary_word: string;
   org_name: string;
   venue: string | null;
+  map_url: string | null;
   event_at: string | null;
   hero_image_path: string | null;
 };
@@ -29,6 +30,7 @@ export async function saveInvite(patch: InvitePatch): Promise<string | null> {
       intro: patch.honorary_word,
       org_name: patch.org_name,
       venue: patch.venue,
+      map_url: patch.map_url,
       event_at: patch.event_at,
       hero_image_path: patch.hero_image_path,
       is_published: true,

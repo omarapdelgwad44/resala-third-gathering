@@ -24,6 +24,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
           slogan: data?.slogan ?? DEFAULT_INVITE.slogan,
           honorary_word: data?.honorary_word ?? DEFAULT_INVITE.honorary_word,
           venue: data?.venue ?? '',
+          map_url: data?.map_url ?? '',
           event_at: toLocalInput(data?.event_at ?? null),
         });
       })
@@ -63,6 +64,7 @@ export function Admin({ onExit }: { onExit: () => void }) {
       honorary_word: form.honorary_word.trim() || DEFAULT_INVITE.honorary_word,
       org_name: form.org_name.trim() || DEFAULT_INVITE.org_name,
       venue: form.venue.trim() || null,
+      map_url: form.map_url.trim() || null,
       event_at: form.event_at ? new Date(form.event_at).toISOString() : null,
       hero_image_path: heroPath,
     });
@@ -136,6 +138,10 @@ export function Admin({ onExit }: { onExit: () => void }) {
               <input value={form.venue} onChange={(e) => update('venue', e.target.value)} maxLength={240} placeholder="اسم القاعة أو العنوان" />
             </label>
           </div>
+          <label className="admin-field">
+            رابط الموقع على خرائط جوجل
+            <input type="url" dir="ltr" value={form.map_url} onChange={(e) => update('map_url', e.target.value)} maxLength={1000} placeholder="https://maps.app.goo.gl/…" />
+          </label>
         </div>
 
         <div className="admin-actions-bar">

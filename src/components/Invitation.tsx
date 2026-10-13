@@ -56,6 +56,7 @@ export function Invitation() {
   const dateText = formatEventDate(event?.event_at ?? null);
   const timeText = formatEventTime(event?.event_at ?? null);
   const venue = event?.venue?.trim() || '';
+  const mapUrl = event?.map_url?.trim() || '';
 
   return (
     <div className="invite-stage">
@@ -95,6 +96,13 @@ export function Invitation() {
               )}
               {venue && <span className="detail"><b>المكان</b>{venue}</span>}
             </div>
+          )}
+
+          {mapUrl && (
+            <a className="card-map" href={mapUrl} target="_blank" rel="noreferrer noopener">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
+              افتح الموقع على الخريطة
+            </a>
           )}
 
           <footer className="card-seal">

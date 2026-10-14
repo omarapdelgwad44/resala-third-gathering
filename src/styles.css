@@ -347,6 +347,41 @@ img { max-width: 100%; }
   box-shadow: 0 20px 36px -16px var(--sky-600);
 }
 
+.card-transport {
+  width: 100%;
+  max-width: 44ch;
+  margin-top: 22px;
+  padding: 16px 20px;
+  text-align: right;
+  background: var(--sky-50);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.transport-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--sky-600);
+}
+
+.transport-label svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.card-transport p {
+  margin: 9px 0 0;
+  font-size: 14.5px;
+  line-height: 1.9;
+  color: var(--ink);
+  white-space: pre-line;
+}
+
 /* ============ ADMIN ============ */
 
 .admin-stage {

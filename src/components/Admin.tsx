@@ -25,7 +25,6 @@ export function Admin({ onExit }: { onExit: () => void }) {
           honorary_word: data?.honorary_word ?? DEFAULT_INVITE.honorary_word,
           venue: data?.venue ?? '',
           map_url: data?.map_url ?? '',
-          transport: data?.transport ?? '',
           event_at: toLocalInput(data?.event_at ?? null),
         });
       })
@@ -66,7 +65,6 @@ export function Admin({ onExit }: { onExit: () => void }) {
       org_name: form.org_name.trim() || DEFAULT_INVITE.org_name,
       venue: form.venue.trim() || null,
       map_url: form.map_url.trim() || null,
-      transport: form.transport.trim() || null,
       event_at: form.event_at ? new Date(form.event_at).toISOString() : null,
       hero_image_path: heroPath,
     });
@@ -143,10 +141,6 @@ export function Admin({ onExit }: { onExit: () => void }) {
           <label className="admin-field">
             رابط الموقع على خرائط جوجل
             <input type="url" dir="ltr" value={form.map_url} onChange={(e) => update('map_url', e.target.value)} maxLength={1000} placeholder="https://maps.app.goo.gl/…" />
-          </label>
-          <label className="admin-field">
-            تفاصيل المواصلات
-            <textarea value={form.transport} onChange={(e) => update('transport', e.target.value)} rows={3} maxLength={1000} placeholder="مثال: أتوبيس من موقف المهندسين الساعة ٥م، أو أقرب محطة مترو…" />
           </label>
         </div>
 

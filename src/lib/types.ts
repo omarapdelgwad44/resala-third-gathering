@@ -8,7 +8,6 @@ export type EventRecord = {
   event_at: string | null;
   venue: string | null;
   map_url: string | null;
-  transport: string | null;
   hero_image_path: string | null;
   is_published: boolean;
 };
@@ -20,7 +19,6 @@ export type InviteForm = {
   org_name: string;
   venue: string;
   map_url: string;
-  transport: string;
   event_at: string;
 };
 
@@ -33,6 +31,5 @@ export const DEFAULT_INVITE: InviteForm = {
   org_name: 'جمعية رسالة — قوافل طبية المهندسين',
   venue: '',
   map_url: '',
-  transport: '',
   event_at: '',
 };

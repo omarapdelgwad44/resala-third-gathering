@@ -57,7 +57,6 @@ export function Invitation() {
   const timeText = formatEventTime(event?.event_at ?? null);
   const venue = event?.venue?.trim() || '';
   const mapUrl = event?.map_url?.trim() || '';
-  const transport = event?.transport?.trim() || '';
 
   return (
     <div className="invite-stage">
@@ -113,16 +112,6 @@ export function Invitation() {
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
               افتح الموقع على الخريطة
             </a>
-          )}
-
-          {transport && (
-            <div className="card-transport">
-              <span className="transport-label">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a2 2 0 0 1-2 2v1.5a1.5 1.5 0 0 1-3 0V18H9v1.5a1.5 1.5 0 0 1-3 0V18a2 2 0 0 1-2-2Zm2-9h12V7a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v0Zm0 3v3h12v-3H6Zm1.5 5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Zm9 0a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z" /></svg>
-                تفاصيل المواصلات
-              </span>
-              <p>{transport}</p>
-            </div>
           )}
 
           <footer className="card-seal">
